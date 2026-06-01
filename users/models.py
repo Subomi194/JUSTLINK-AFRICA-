@@ -35,13 +35,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('admin', 'Admin'),
     )
 
-    username = models.CharField(max_length=20, unique=True, null=True, blank=True) 
     email = models.EmailField(unique=True, null=True, blank=True)
     name = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=20, blank=True, default='')
+    phone_number = models.CharField(max_length=20, unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES) 
     language = models.CharField(max_length=20, default='en')
     country = models.CharField(max_length=100)
+    ussd_session_id = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -52,15 +52,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name', 'role', 'country', 'phone_number', 'language']
 
     def __str__(self):
-        return self.email or self.username or str(self.id)
+        return self.email or self.name or str(self.id)
 
 class LawyerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lawyer_profile')
-    bar_number = models.CharField(max_length=50, unique=True)
-    specializations = models.CharField(max_length=255)
-    bio = models.TextField(blank=True, default='')
-    is_verified = models.BooleanField(default=False)
-    is_pro_bono = models.BooleanField(default=False)
+    law_firm = models.CharField(max_length=255)
+    license_number = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return f"{self.user.name}'s Lawyer Profile"

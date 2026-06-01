@@ -138,6 +138,10 @@ STATIC_URL = 'static/'
 
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
+#USSD Configuration
+USSD_API_KEY = os.getenv('USSD_API_KEY')
+USSD_USERNAME = os.getenv('USSD_USERNAME')
+
 REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',

@@ -7,6 +7,7 @@ from users.serializers import UserSerializer, LawyerSerializer, CustomTokenObtai
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from drf_spectacular.utils import extend_schema
 
 User = get_user_model()
@@ -48,16 +49,16 @@ class UserLoginView(APIView):
     @extend_schema(request=UserLoginSerializer, responses={200: CustomTokenObtainPairSerializer})
     def post(self, request):
 
-        username = request.data.get('username')
+        phone_number = request.data.get('phone_number')
         password = request.data.get('password')
 
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(phone_number=phone_number)
         except User.DoesNotExist:
-            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid phone number or password.'}, status=status.HTTP_401_UNAUTHORIZED)
         
         if not user.check_password(password):
-            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)    
+            return Response({'error': 'Invalid phone number or password.'}, status=status.HTTP_401_UNAUTHORIZED)    
         
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -80,3 +81,36 @@ class UsersProfileView(APIView):
         user = request.user
         serializer = self.serializer_class(user)
         return Response({'data': serializer.data, 'message': 'User profile retrieved successfully.' }, status=status.HTTP_200_OK)
+
+class USSDView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        session_id = request.data.get('ussd_session_id')
+        phone_number = request.data.get('phone_number')
+        text = request.data.get('text', '')
+
+        if text == '':
+            response = "CON Welcome to JustLink Africa\n"
+            response += "1. Know your rights\n"
+            response += "2. Get legal help\n"
+            response += "3. Find a lawyer"
+
+        elif text == '1':
+            response = "CON Select a topic\n"
+            response += "1. Labour rights\n"
+            response += "2. Land rights\n"
+            response += "3. Domestic violence"
+
+        elif text == '1*1':
+            response = "END You have the right to a written\n"
+            response += "contract and minimum wage."
+
+        elif text == '2':
+            response = "END Your case has been logged.\n"
+            response += "A lawyer will contact you soon."
+
+        else:
+            response = "END Invalid option. Please try again."
+
+        return HttpResponse(response, content_type='text/plain')

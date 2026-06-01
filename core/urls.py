@@ -22,7 +22,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from users.views import CustomTokenObtainPairView, UserLoginView
+from users.views import CustomTokenObtainPairView, UserLoginView, USSDView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,4 +36,6 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/v2/docs/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    path('api/ussd/', USSDView.as_view(), name='ussd'),
 ]

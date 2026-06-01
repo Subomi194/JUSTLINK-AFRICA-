@@ -10,21 +10,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'name', 'phone_number', 'role', 'language', 'country', 'created_at', 'password']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'name', 'phone_number', 'language', 'country', 'ussd_session_id', 'created_at', 'password']
+        read_only_fields = ['id', 'ussd_session_id', 'created_at']
 
     def validate(self, data):
 
         if data.get('role') == 'user':
-            if not data.get('username'):
-                raise serializers.ValidationError("Username is required for users.")
+            if not data.get('phone_number'):
+                raise serializers.ValidationError("Phone number is required for users.")
 
         return data
 
     def create(self, validated_data):
         user = User.objects.create_user(
             role='user',  # Default role is 'user' for regular users
-            username=validated_data.get('username'),
             password=validated_data.get('password'),
             name=validated_data['name'],
             phone_number=validated_data['phone_number'],
@@ -49,14 +48,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    phone_number = serializers.CharField()
     password = serializers.CharField()
 
 
 class LawyerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = LawyerProfile
-        fields = ['id', 'bar_number', 'specializations']
+        fields = ['law_firm', 'license_number']
 
 class LawyerSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -64,7 +63,7 @@ class LawyerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'name', 'phone_number', 'role', 'language', 'country', 'created_at', 'password', 'lawyer_profile']
+        fields = ['id', 'email', 'name', 'phone_number', 'country', 'created_at', 'password', 'lawyer_profile']
         read_only_fields = ['id', 'created_at']
 
     def validate(self, data):
@@ -76,11 +75,10 @@ class LawyerSerializer(serializers.ModelSerializer):
         lawyer_profile_data = validated_data.pop('lawyer_profile') # Extract lawyer profile data from the validated data
         user = User.objects.create_user(
             role='lawyer',  # Default role is 'lawyer' for lawyers
-            email=validated_data.get('email'),
+            email=validated_data['email'],
             password=validated_data.get('password'),
             name=validated_data['name'],
             phone_number=validated_data['phone_number'],
-            language=validated_data['language'],
             country=validated_data['country']
         )
         LawyerProfile.objects.create(user=user, **lawyer_profile_data) #create profile linked to user using the extracted lawyer profile data
