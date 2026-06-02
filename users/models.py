@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
         
         extra_fields['email'] = email  # Ensure email is included in extra_fields
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
@@ -55,9 +55,26 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email or self.name or str(self.id)
 
 class LawyerProfile(models.Model):
+
+    SPECIALIZATION_CHOICES = (
+        ('criminal', 'Criminal Law'),
+        ('civil', 'Civil Law'),
+        ('family', 'Family Law'),
+        ('corporate', 'Corporate Law'),
+        ('intellectual_property', 'Intellectual Property Law'),
+        ('labor', 'Labor Law'),
+        ('tax', 'Tax Law'),
+        ('environmental', 'Environmental Law'),
+        ('international', 'International Law'),
+        ('other', 'Other'),
+    )
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='lawyer_profile')
     law_firm = models.CharField(max_length=255)
     license_number = models.CharField(max_length=255, unique=True)
+
+    specialization = models.CharField(max_length=50, choices=SPECIALIZATION_CHOICES)
+    bio = models.TextField(blank=True, default='')
 
     def __str__(self):
         return f"{self.user.name}'s Lawyer Profile"

@@ -52,6 +52,8 @@ INSTALLED_APPS = [
 
     'users',
     'legal_case',
+    'lawyers',
+    'chats',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -59,6 +61,7 @@ AUTH_USER_MODEL = 'users.User'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -91,13 +94,26 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=0,
-        ssl_require=True
-    )
-}
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('LOCAL_DB_NAME', 'justlink_db'),
+            'USER': os.getenv('LOCAL_DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('LOCAL_DB_PASSWORD', ''),
+            'HOST': os.getenv('LOCAL_DB_HOST', 'localhost'),
+            'PORT': os.getenv('LOCAL_DB_PORT', '5432'),
+        }
+    }
+else:
+
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=0,
+            ssl_require=True
+        )
+    }
 
 
 # Password validation
@@ -135,6 +151,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 

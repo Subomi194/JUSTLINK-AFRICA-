@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from users.models import User
-from users.serializers import UserSerializer, LawyerSerializer, CustomTokenObtainPairSerializer, UserLoginSerializer
+from users.serializers import UserSerializer, LawyerSerializer, CustomTokenObtainPairSerializer, UserLoginSerializer, LawyerProfileEditSerializer, AllUsersProfileSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -73,10 +73,10 @@ class UserLoginView(APIView):
             }
         }, status=status.HTTP_200_OK)
 
-class UsersProfileView(APIView):
-    serializer_class = UserSerializer
+class AllUsersProfileView(APIView):
+    serializer_class = AllUsersProfileSerializer
 
-    @extend_schema(responses={200: UserSerializer})
+    @extend_schema(responses={200: AllUsersProfileSerializer})
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(user)
@@ -114,3 +114,21 @@ class USSDView(APIView):
             response = "END Invalid option. Please try again."
 
         return HttpResponse(response, content_type='text/plain')
+
+
+class LawyerProfileEditView(APIView):
+    serializer_class = LawyerProfileEditSerializer
+
+    @extend_schema(request=LawyerProfileEditSerializer, responses={200: LawyerProfileEditSerializer})
+
+    def patch(self, request):
+        if request.user.role != 'lawyer':
+            return Response({'error': 'Only lawyers can edit their profiles.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        profile = request.user.lawyer_profile
+        
+        serializer = self.serializer_class(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'data': serializer.data, 'message': 'Lawyer profile updated successfully.' }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

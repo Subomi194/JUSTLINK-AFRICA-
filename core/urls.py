@@ -27,7 +27,9 @@ from users.views import CustomTokenObtainPairView, UserLoginView, USSDView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
-    path('api/cases/', include('legal_case.urls')),
+    #path('api/cases/', include('legal_case.urls')),
+    path('api/lawyers/', include('lawyers.urls')),
+    path('api/chats/', include('chats.urls')),
 
     path('api/login/lawyer/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/login/user/', UserLoginView.as_view(), name='user_login'),

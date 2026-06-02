@@ -83,4 +83,16 @@ class LawyerSerializer(serializers.ModelSerializer):
         )
         LawyerProfile.objects.create(user=user, **lawyer_profile_data) #create profile linked to user using the extracted lawyer profile data
         return user
+
+class LawyerProfileEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LawyerProfile
+        fields = ['specialization', 'bio']
+
+class AllUsersProfileSerializer(serializers.ModelSerializer):
+    lawyer_profile = LawyerProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'phone_number', 'language', 'country', 'created_at', 'role', 'lawyer_profile']
     
