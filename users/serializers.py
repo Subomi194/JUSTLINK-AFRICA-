@@ -2,6 +2,7 @@ from rest_framework import serializers
 from users.models import LawyerProfile
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from users.utils import normalize_phone
 
 User = get_user_model()
 
@@ -10,8 +11,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'phone_number', 'language', 'country', 'ussd_session_id', 'created_at', 'password']
-        read_only_fields = ['id', 'ussd_session_id', 'created_at']
+        fields = ['id', 'name', 'phone_number', 'language', 'country', 'created_at', 'password']
+        read_only_fields = ['id', 'created_at']
 
     def validate(self, data):
 
@@ -31,6 +32,14 @@ class UserSerializer(serializers.ModelSerializer):
             country=validated_data['country']
         )
         return user
+    
+    def validate_phone_number(self, value):
+        try:
+            return normalize_phone(value)
+        except Exception:
+            raise serializers.ValidationError(
+                "Enter a valid phone number."
+            )
     
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     
@@ -83,6 +92,14 @@ class LawyerSerializer(serializers.ModelSerializer):
         )
         LawyerProfile.objects.create(user=user, **lawyer_profile_data) #create profile linked to user using the extracted lawyer profile data
         return user
+    
+    def validate_phone_number(self, value):
+        try:
+            return normalize_phone(value)
+        except Exception:
+            raise serializers.ValidationError(
+                "Enter a valid phone number."
+            )
 
 class LawyerProfileEditSerializer(serializers.ModelSerializer):
     class Meta:

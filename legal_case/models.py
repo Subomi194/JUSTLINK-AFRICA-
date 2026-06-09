@@ -14,19 +14,27 @@ class LegalCase(models.Model):
         ('other', 'Other'),
     ]
 
-    STATUS_CHOICES = [
-        ('open', 'Open'),
-        ('assigned', 'Assigned'),
-        ('in_progress', 'In Progress'),
-        ('resolved', 'Resolved'),
-        ('closed', 'Closed'),
+    CHANNEL_CHOICES = [
+        ('web', 'Web'),
+        ('mobile', 'Mobile'),
+        ('ussd', 'USSD'),
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='submitted_cases')
+    lawyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_cases')
     issue_category = models.CharField(max_length=255, choices=ISSUE_CATEGORIES)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES, default='web')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Legal Case {self.id} - {self.issue_category}"
+
