@@ -59,7 +59,6 @@ class UserLoginView(APIView):
     @extend_schema(request=UserLoginSerializer, responses={200: CustomTokenObtainPairSerializer})
     def post(self, request):
 
-        phone_number = request.data.get('phone_number')
         phone_number = normalize_phone(request.data.get('phone_number'))
         password = request.data.get('password')
 
